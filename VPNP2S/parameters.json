@@ -14,7 +14,6 @@
         "dnsResolversuffix": {
             "value": "dnsResolver"
         },
-
         "prefix" : {
             "value": "tst"
         },
@@ -29,9 +28,6 @@
         },
         "subnet02" : {
             "value": "10.0/24"
-        } ,
-        "bastionSN" : {
-            "value": "50.0/26"
         } ,
         "vpnSN" : {
             "value": "60.0/27"
@@ -66,11 +62,6 @@
          "storageskuname" : {
             "value": "Standard_LRS"
          },
-
-         "bastionHostName" : {
-            "value": "Bastion"
-         },
-
          "vpnClientAddressCIDR": {
             "value": "172.16.0.0/24"
          },
