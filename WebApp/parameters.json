@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "applicationName": {
+            "value": "MyApp"
+        },
+        "environmentLabel": {
+            "value": "tst"
+        },
+        "environmentName": {
+            "value": "Test"
+        },
+        "computeGroupName": {
+            "value": "homp"
+        },
+        "networkGroupName": {
+            "value": "spoke"
+        },
+        "vNetNetwork": {
+            "value": "10.120."
+        },
+        "dnsNamingPrefix": {
+            "value": "dns"
+        },
+        "resourceGroupPrefix": {
+            "value": "rg"
+        },
+        "vNetNamingPrefix": {
+            "value": "vn"
+        },
+        "subnetNamingPrefix": {
+            "value": "sn"
+        },
+        "storageSvcsGroupName": {
+            "value": "dbst"
+        },
+        "supportSvcsGroupName": {
+            "value": "supportsvcs"
+        }
+    }
+}

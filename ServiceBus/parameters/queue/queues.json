@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "queues": {
+        "value": [
+            {
+                "name": "accounts-lockouts"
+            },
+            {
+                "name": "accounts-create"
+              },
+              {
+                "name": "accounts-modifications"
+              }
+        ]
+
+    },
+    "queueDefaultProperties": {
+        "value": {
+            "properties": {
+                "maxMessageSizeInKilobytes": 256,
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": 1024,
+                "status": "Active",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": true,
+                "enableExpress": false,
+                "requiresDuplicateDetection": false,
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P10675199D",
+                "deadLetteringOnMessageExpiration": true,
+                "enableBatchedOperations": true,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": 5
+            }
+        }
+      }
+    }
+}

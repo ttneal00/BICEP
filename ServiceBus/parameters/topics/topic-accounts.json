@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "topicName": {
+          "value": "account-updates"
+      },
+      "subscriptions": {
+        "value": [
+            {
+                "name": "accounts-update-sub1"
+            },
+            {
+                "name": "accounts-update-sub2"
+            }
+        ]
+
+    },
+      "topicConfigs": {
+          "value": {
+              "properties": {
+                  "maxMessageSizeInKilobytes": 256,
+                  "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                  "maxSizeInMegabytes": 1024,
+                  "requiresDuplicateDetection": false,
+                  "duplicateDetectionHistoryTimeWindow": "PT10M",
+                  "enableBatchedOperations": false,
+                  "status": "Active",
+                  "supportOrdering": false,
+                  "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                  "enablePartitioning": false,
+                  "enableExpress": false
+              }
+          }
+      },
+      "subscriptionConfigDefaults": {
+          "value": {
+              "properties":{
+                  "isClientAffine": "false",
+                  "lockDuration": "PT1M",
+                  "requiresSession": false,
+                  "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                  "deadLetteringOnMessageExpiration": false,
+                  "deadLetteringOnFilterEvaluationExceptions": true,
+                  "maxDeliveryCount": 10,
+                  "status": "Active",
+                  "enableBatchedOperations": false,
+                  "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+              },
+              "rules": {
+                  "action": { },
+                  "filterType": "SqlFilter",
+                  "sqlFilter": {
+                    "sqlExpression": "1=1",
+                    "compatibilityLevel": 20
+                  }
+              }
+          }
+      }
+
+    }
+}

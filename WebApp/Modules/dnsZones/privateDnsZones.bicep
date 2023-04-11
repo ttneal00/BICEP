@@ -1,47 +1,47 @@
 targetScope = 'resourceGroup'
 
-param vpnVnetId string
+param VnetId string
 
 param privateDnsZones array = [
   {
   name:  'privatelink${environment().suffixes.sqlServerHostname}'
-  vnetId:vpnVnetId
+  vnetId:VnetId
   }
   {
     name:  'privatelink.blob.${environment().suffixes.storage}'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name:'privatelink.dfs.${environment().suffixes.storage}'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name: 'privatelink.table.${environment().suffixes.storage}'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name: 'privatelink.vaultcore.azure.net'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name: 'privatelink.azuresynapse.net'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name: 'privatelink.sql.azuresynapse.net'
-    vnetId:vpnVnetId
+    vnetId:VnetId
   }
   {
     name:'privatelink.dev.azuresynapse.net'
-    vnetId: vpnVnetId
+    vnetId: VnetId
   }
   {
     name: 'privatelink.azurewebsites.net'
-      vnetId: vpnVnetId
+      vnetId: VnetId
   }
   {
     name: 'privatelink.servicebus.windows.net'
-      vnetId: vpnVnetId
+      vnetId: VnetId
   }
  ]
 

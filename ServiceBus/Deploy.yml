@@ -1,0 +1,51 @@
+parameters:
+# Environment Code Examples tst, dev, uat
+  - name: location
+    displayName: 'Location'
+    type: string
+
+  - name: vmImageName
+    displayName: 'VMImage Name'
+    type: string
+
+  - name: azureServiceConnection
+    displayName: 'Service Connection'
+    type: string
+
+  - name: SourceDirectory
+    displayName: 'SourceDirectory'
+    type: string
+  
+  - name: envPrefix
+    displayName: 'Environment Prefix'
+    type: string
+
+  - name: servicebusName
+    displayName: 'Servicebus Namespace Name'
+    type: string
+
+steps:
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: $(Build.SourcesDirectory)
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: Deploy 
+
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: ${{parameters.azureServiceConnection}}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az deployment sub create --location ${{parameters.location}} --template-file './main.bicep' --parameters '@parameters/${{parameters.EnvCode}}globalParams.json' --parameters location=${{parameters.location}} 
+  
+  - task: AzurePowerShell@5
+    inputs:
+      azureSubscription: ${{parameters.azureServiceConnection}}
+      scriptPath: '$(Build.SourcesDirectory)/Infrastructure/servicebusTopics.ps1'
+      scriptArguments: '-location ${{parameters.location}} -envPrefix ${{parameters.envPrefix}} -servicebusName ${{parameters.servicebusName}}'
+      azurePowerShellVersion: latestVersion
+

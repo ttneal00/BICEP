@@ -12,18 +12,18 @@ param supportServicvesSubnetName string
 param supportServicvesSubnetPrefix string
 param datasvcSubnetPrefix string
 param datasvcSubnetName string
-param appsvcSubnetPrefix string
-param appsvcSubnetName string
+param computeSubnetPrefix string
+param computeSubnetName string
 param appVnetIntSubnetPrefix string
 param appVnetIntSubnetName string
 param globaltags object
-param environmentPrefix string
+param environmentLabel string
 
 param nsgNames array = [
-  'nsgapp-${environmentPrefix}01'
-  'nsgsharedsvc-${environmentPrefix}01'
-  'nsgdbst-${environmentPrefix}01'
-  'nsgvnetint-${environmentPrefix}01'
+  'nsgapp-${environmentLabel}01'
+  'nsgsharedsvc-${environmentLabel}01'
+  'nsgdbst-${environmentLabel}01'
+  'nsgvnetint-${environmentLabel}01'
 ]
 
 //
@@ -66,9 +66,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-08-01' = {
     }
   }
   {
-   name: appsvcSubnetName
+   name: computeSubnetName
    properties: {
-    addressPrefix: appsvcSubnetPrefix
+    addressPrefix: computeSubnetPrefix
     networkSecurityGroup: {
       id: defaultNsg[0].outputs.id
     }
@@ -117,26 +117,19 @@ output publicSubnetID string = vnet.properties.subnets[0].id
 output publicSubnetName string = vnet.properties.subnets[0].name
 output publicSubnetPrefix string = vnet.properties.subnets[0].properties.addressPrefix
 
-output sharedsvcSubnetId string = vnet.properties.subnets[1].id
-output sharedsvcSubnetName string = vnet.properties.subnets[1].name
-output sharedsvcSubnetPrefix string = vnet.properties.subnets[1].properties.addressPrefix
+output datasvcSubnetID string = vnet.properties.subnets[1].id
+output datasvcSubnetName string = vnet.properties.subnets[1].name
+output datasvcSubnetPrefix string = vnet.properties.subnets[1].properties.addressPrefix
 
-output datasvcSubnetID string = vnet.properties.subnets[2].id
-output datasvcSubnetName string = vnet.properties.subnets[2].name
-output datasvcSubnetPrefix string = vnet.properties.subnets[2].properties.addressPrefix
+output computeSubnetID string = vnet.properties.subnets[2].id
+output computeSubnetName string = vnet.properties.subnets[2].name
+output computeSubnetPrefix string = vnet.properties.subnets[2].properties.addressPrefix
 
-output appsvcSubnetID string = vnet.properties.subnets[3].id
-output appsvcSubnetName string = vnet.properties.subnets[3].name
-output appsvcSubnetPrefix string = vnet.properties.subnets[3].properties.addressPrefix
+output supportServicvesSubnetId string = vnet.properties.subnets[3].id
+output supportServicvesSubnetName string = vnet.properties.subnets[3].name
+output supportServicvesSubnetPrefix string = vnet.properties.subnets[3].properties.addressPrefix
 
-output dnsResolverInboundSubnetID string = vnet.properties.subnets[4].id
-output dnsResolverInboundSubnetName string = vnet.properties.subnets[4].name
-output dnsResolverInboundSubnetPrefix string = vnet.properties.subnets[4].properties.addressPrefix
+output appVnetIntSubnetID string = vnet.properties.subnets[4].id
+output appVnetIntSubnetName string = vnet.properties.subnets[4].name
+output appVnetIntSubnetPrefix string = vnet.properties.subnets[4].properties.addressPrefix
 
-output dnsResolverOutboundSubnetID string = vnet.properties.subnets[5].id
-output dnsResolverOutboundSubnetName string = vnet.properties.subnets[5].name
-output dnsResolverOutboundSubnetPrefix string = vnet.properties.subnets[5].properties.addressPrefix
-
-output appVnetIntHostID string = vnet.properties.subnets[6].id
-output appVnetIntHostName string = vnet.properties.subnets[6].name
-output appVnetIntHostPrefix string = vnet.properties.subnets[6].properties.addressPrefix
