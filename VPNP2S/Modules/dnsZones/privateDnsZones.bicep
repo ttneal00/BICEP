@@ -69,6 +69,11 @@ resource dnsVirtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetwork
 
 // Module outputs
 
+output zones array = [for (zone, i) in privateDnsZones:{
+  privateZoneName: prvDnsZones[i].name
+  privateZoneId: privateDnsZones[i].id
+}]
+
 output sqlDnsZoneName string = prvDnsZones[0].name
 output sqlDnsZoneId string = prvDnsZones[0].id
 

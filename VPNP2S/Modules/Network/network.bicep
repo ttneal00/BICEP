@@ -6,18 +6,15 @@ targetScope = 'resourceGroup'
 param location string
 param vnetName string 
 param vnetAddress string
-param publicSubnetName string
+param publicSubnetName string = '${vnetName}-pubsn'
 param publicAddressPrefix string
-param supportServicvesSubnetName string
+param supportServicvesSubnetName string = '${vnetName}-supportsn'
 param supportServicvesSubnetPrefix string
-param datasvcSubnetPrefix string
-param datasvcSubnetName string
-param appsvcSubnetPrefix string
-param appsvcSubnetName string
-param appVnetIntSubnetPrefix string
-param appVnetIntSubnetName string
+param computesvcSubnetPrefix string
+param computeSubnetName string = '${vnetName}-computesn'
 param globaltags object
 param environmentPrefix string
+param subnets object
 
 param nsgNames array = [
   'nsgapp-${environmentPrefix}01'
@@ -57,24 +54,14 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-08-01' = {
     }
   }
   {
-    name: datasvcSubnetName
+    name: computeSubnetName
     properties: {
-      addressPrefix: datasvcSubnetPrefix
+      addressPrefix: computesvcSubnetPrefix
       networkSecurityGroup: {
         id: defaultNsg[2].outputs.id
       }
     }
   }
-  {
-   name: appsvcSubnetName
-   properties: {
-    addressPrefix: appsvcSubnetPrefix
-    networkSecurityGroup: {
-      id: defaultNsg[0].outputs.id
-    }
-   } 
-  
-  } 
   {
     name: supportServicvesSubnetName
     properties: {
@@ -85,25 +72,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-08-01' = {
      delegations: []
     } 
   } 
-
-  {
-    name: appVnetIntSubnetName
-    properties: {
-      addressPrefix: appVnetIntSubnetPrefix
-      networkSecurityGroup: {
-        id: defaultNsg[3].outputs.id
-      }
-      delegations: [
-        {
-          name: '${appVnetIntSubnetName}-del'
-          properties: {
-            serviceName: 'Microsoft.Web/serverfarms'
-          }
-        }
-      ]
-    }
-  }
- ]
+]
     
   }
 tags: globaltags
