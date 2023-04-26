@@ -23,6 +23,12 @@
         "spoke01Address" : {
             "value": "10.120."
         },
+        "hubName" : {
+            "value": "Hub"
+        },
+        "hub01Address" : {
+            "value": "10.121."
+        },
         "subnet01" : {
             "value": "0.0/24"
         },
