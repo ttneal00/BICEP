@@ -1,0 +1,51 @@
+parameters:
+# Environment Code Examples tst, dev, uat
+  - name: envCode
+    displayName: 'Environment Code'
+    type: string
+
+  - name: location
+    displayName: 'Location'
+    type: string
+
+  - name: vmImageName
+    displayName: 'VMImage Name'
+    type: string
+
+  - name: azureServiceConnection
+    displayName: 'Service Connection'
+    type: string
+
+  - name: templateFile
+    displayName: 'templatefile'
+    type: string
+
+  - name: SourceDirectory
+    displayName: 'SourceDirectory'
+    type: string
+  
+  - name: envPrefix
+    displayName: 'Environment Prefix'
+    type: string
+
+steps:
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: $(Build.SourcesDirectory)
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: mrlDevDeploy
+
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: ${{parameters.azureServiceConnection}}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        ip=$(az rest --uri "http://icanhazip.com")
+        echo "##vso[task.setvariable variable=externalIPAddress]$ip"
+        az deployment sub create --location ${{parameters.location}} --template-file './Infrastructure/main.bicep' --parameters '@Infrastructure/${{parameters.EnvCode}}Parameters.json' --parameters location=${{parameters.location}} 
+  
+
