@@ -2,8 +2,9 @@ targetScope = 'subscription'
 param prefix string
 param location string
 param tenantid string = subscription().tenantId
+param globaltags object = {
 
-
+}
 
 // Enviornment
 
@@ -21,20 +22,25 @@ param computeRgName string
 // virtual network vars and params
 param spokeName string
 param spoke01Network string
-param hub01Address string
+param hub01Network string
 param hubName string
-param subnet01 string
-param subnet02 string
-param vpnSN string
-var spoke01Prefix = '${spoke01Network}0.0/16'
+param publicSubnet string
+param supportSubnet string
+param dnsResolverInboundSubnet string
+param dnsResolverOutboundSubnet string
+param vpnGatewaySubnet string
+param computeSubnet string
+param myIpAddress string
+
+param defaultNsg string
+param spoke01Prefix string = '${spoke01Network}0.0/16'
+param hub01Prefix string = '${hub01Network}0.0/16'
 param vpnClientAddressCIDR string
 param vpnClientProtocols string
 param vpnGatewaySku string
 
 // dnsResolver Info
 param dnsResolversuffix string
-param dnsResolverInboundSn string
-param dnsResolverOutboundSn string
 var dnsResolverName = '${prefix}${dnsResolversuffix}'
 var inboundEndpointsName = '${prefix}${dnsResolversuffix}IbEp'
 var outboundEndpointsName = '${prefix}${dnsResolversuffix}ObEp'
@@ -55,36 +61,121 @@ var resourceGroups = [
   }
 ]
 
-var networks = [
+param networks array = [
   {
-    name: spokeName
+    name: '${prefix}-${hubName}-01'
     vnetPrefix: spoke01Prefix
     location: location
     scope: spokeRgName
     subnets: [
       {
-        name: 'publicSn-${spokeName}'
+        name: '${prefix}-${spokeName}-publicSn'
         properties:{
-          addressPrefix: '${spoke01Network}0.0/24'
-    
+          addressPrefix: '${spoke01Network}${publicSubnet}'    
+        }
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-publicSn-defaultNsg')
+          name: '${prefix}-${spokeName}-publicSn-nsg'
+          securityRules: []
         }
       }
       {
-        name: 'supportSn-${spokeName}'
+        name: '${prefix}-${spokeName}-supportSn'
         properties:{
-          addressPrefix: '${spoke01Network}10.0/24'
+          addressPrefix: '${spoke01Network}${supportSubnet}'
     
+        }
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-supportSn-defaultNsg')
+          name: '${prefix}-${spokeName}-supportSn-nsg'
+          securityRules: []
+        }
+      }
+      {
+        name: '${prefix}-${spokeName}-dnsResolverInboundSn'
+        subnetProperties:{
+          addressPrefix: '${spoke01Network}${dnsResolverInboundSubnet}'
+        }
+        subnetDelegations: [
+          {
+            name: '${prefix}-${spokeName}-dnsResolverInboundSn-del'
+            properties: {
+            serviceName: 'Microsoft.Network/dnsResolvers'
+            }
+          }
+        ]
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-dnsResolverInboundSn-defaultNsg')
+          name: '${prefix}-${spokeName}-dnsResolverInboundSn-nsg'
+          securityRules: []
+        }
+
+        
+      }
+      {
+        name: '${prefix}-${spokeName}-dnsResolverOutboundSn'
+        properties:{
+          addressPrefix: '${spoke01Network}${dnsResolverOutboundSubnet}'
+        }
+        subnetDelegations: [
+          {
+            name: '${prefix}-${spokeName}-dnsResolverOutboundSn-del'
+            properties: {
+              serviceName: 'Microsoft.Network/dnsResolvers'
+            }
+          }
+        ]
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-dnsResolverOutboundSn-defaultNsg')
+          name: '${prefix}-${spokeName}-dnsResolverOutboundSn-nsg'
+          securityRules: []
+        }
+        
+      }
+      {
+        name: 'GatewaySubnet'
+        properties:{
+          addressPrefix: '${spoke01Network}${vpnGatewaySubnet}'
+        }
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-GatewaySubnet-defaultNsg')
+          name: '${prefix}-${spokeName}-GatewaySubnet-nsg'
+          securityRules: []
         }
       }
     ]
+   
   }
   {
-    name: hubRgName
+    name: '${prefix}-${spokeName}-01'
+    vnetPrefix: hub01Prefix
     location: location
-    vnetPrefix: hub01Address
-    scope: hubRgName
-    subnets:[
-      
+    scope: spokeRgName
+    subnets: [
+      {
+        name: '${spokeName}-computeSn'
+        properties:{
+          addressPrefix: '${spoke01Network}${computeSubnet}'
+        }
+        nsg:{
+          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-GatewaySubnet-defaultNsg')
+          name: '${prefix}-${spokeName}-compute-nsg'
+          securityRules: [
+            {
+              name: 'AllowRDPInbound'
+              properties: {
+                protocol: 'TCP'
+                sourcePortRange: '*'
+                destinationPortRange: '3389'
+                sourceAddressPrefix: myIpAddress
+                destinationAddressPrefix: '*'
+                access: 'Allow'
+                priority: 'Inbound'
+              }
+            }
+          ]
+        }
+      }
     ]
   }
 ]
@@ -99,21 +190,36 @@ module resourceGroupLoop 'Modules/ResourceGroup.bicep' =[for resourceGroup in re
 }]
 
 
+
 //Connect Modules
-module virtualNetwork 'Modules/Network/network.bicep' = {
+module virtualNetwork 'Modules/Network/network.bicep' =[for (network, i) in networks:{
   scope: resourceGroup(connectRgName)
-  name: '${prefix}${spokeName}-01'
+  name: '${network.name}'
   params: {
     location: location
-    vnetAddress: spoke01CIDR
-    vnetName: '${prefix}${spokeName}-01'
-    subnets: networks.subnets
-    `
-  }
+    vnetAddress: network.vnetPrefix
+    vnetName: '${network.name}'
+    subnets: network.subnets
+    tags: globaltags
+   }
   dependsOn:[
     resourceGroupLoop
+    nsgModule
   ]
-}
+}]
+
+module nsgModule 'Modules/Network/nsgDefault.bicep' = [for (item, i) in networks:{
+  scope:  resourceGroup(connectRgName)
+  name: item.subnets.nsgName
+  params: {
+    location: item.location
+    nsgName: item.subnets.nsgName
+    securityRules: item.nsg.securityRules
+  }
+  dependsOn: [
+    resourceGroupLoop
+  ]
+}]
 
 // module dnsResolverIbSn 'Modules/subnet.bicep' = {
 //   scope: resourceGroup(connectRG.name)
