@@ -19,7 +19,7 @@ param appInsightsConnectionString string
 
 var appDeployments = [
   {
-    name: 'webapp1{environmentLabel}01'
+    name: 'webapp1-${environmentLabel}01'
     kind: 'Linux'
     properties: {
       ASPNETCORE_ENVIRONMENT: environmentName
@@ -28,7 +28,7 @@ var appDeployments = [
     }
    }
   {
-    name: 'webapp2{environmentLabel}01'
+    name: 'webapp2-${environmentLabel}01'
     kind: 'Linux'
     properties: {
       ASPNETCORE_ENVIRONMENT: environmentName
@@ -40,7 +40,7 @@ var appDeployments = [
 
 // Resource Deployment
 resource webApps 'Microsoft.Web/sites@2022-03-01' =[for app in appDeployments: {
-  name: '${environmentLabel}${app.name}'
+  name: '${app.name}'
   location: location
   kind: app.kind
   identity: {
@@ -87,6 +87,9 @@ module prvEndPoint '../privateEndpoint/privateEndpoint.bicep' = [for app in appD
     pvtEndpointDnsGroupName: 'pegrp${app.name}'
     subnetId: webAppSubnetId
   }
+  dependsOn:[
+    webApps
+  ]
 }]
 
 module webAppsSettings './appSettings.bicep' =  [for app in appDeployments: {

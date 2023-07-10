@@ -1,10 +1,7 @@
 trigger:
   branches:
     include:
-    - main
-  paths:
-    include:
-    - Infrastructure
+    - Dev
 
 name: MrlDeployDev-$(Date:yyyy.MM.dd).$(Rev:rr)
 
@@ -21,5 +18,5 @@ extends:
     azureServiceConnection: 'azure-service-connection-dev'
     SourceDirectory: '/Infrastructure/'
     templateFile: './ControlPlane/'
-    EnvCode: 'dev'
-    EnvPrefix: 'd'
+    EnvCode: 'tst'
+    EnvPrefix: 't'

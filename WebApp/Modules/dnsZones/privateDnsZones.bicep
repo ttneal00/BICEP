@@ -1,6 +1,7 @@
 targetScope = 'resourceGroup'
 
 param VnetId string
+param vnetName string
 
 param privateDnsZones array = [
   {
@@ -61,7 +62,7 @@ resource dnsVirtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetwork
   properties: {
     registrationEnabled: false
     virtualNetwork:  {
-      id: privateDnsZones[i].vnetId
+      id: resourceId('Microsoft.Network/virtualNetworks',vnetName)
     }
   }
 }]

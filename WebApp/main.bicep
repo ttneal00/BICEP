@@ -94,6 +94,7 @@ module privateDNSZone 'Modules/dnsZones/privateDnsZones.bicep' = {
   name: '${dnsNamingPrefix}${environmentLabel}-${supportSvcsGroupName}-01'
   params: {
     VnetId: Spoke01.outputs.supportServicvesSubnetId
+    vnetName: Spoke01.name
   }
 }
 

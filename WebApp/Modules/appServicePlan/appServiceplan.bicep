@@ -8,6 +8,7 @@ param appServicePlanName string
   'S2'
   'S3'
 ])
+@description('Name of the resource SKU')
 param skuSize string 
 param perSiteScaling bool = false
 param elasticScaleEnabled bool = false

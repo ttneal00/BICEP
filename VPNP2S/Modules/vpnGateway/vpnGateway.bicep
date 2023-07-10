@@ -2,6 +2,7 @@ param location string
 param tenantId string 
 param gatewayName string
 param vpnClientAddressCIDR string
+param tags object
 
 @allowed([
   'Static'
@@ -39,7 +40,7 @@ param gatewayType string = 'Vpn'
   'OpenVPN'
   'SSTP'
 ])
-param vpnClientProtocols string = 'IkeV2'
+param vpnClientProtocols string = 'OpenVPN'
 
 
 @allowed([
@@ -114,5 +115,6 @@ resource vpnGateway 'Microsoft.Network/virtualNetworkGateways@2021-02-01' = {
       aadIssuer: issuer
     }
   }
+  tags: tags
 }
 

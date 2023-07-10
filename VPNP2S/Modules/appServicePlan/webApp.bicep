@@ -13,6 +13,8 @@ param appServicePlanId string
 param appDnsZoneId string
 param webAppSubnetId string
 param vnetIntegrationSubnetId string
+var randomString = take(uniqueString(resourceGroup().id), 4)
+param tags object
 
 @allowed([
   'functionapp'
@@ -23,12 +25,13 @@ param kind string
 
 // Resource Deployment
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: webAppName
+  name: '${webAppName}${randomString}'
   location: location
   kind: kind
   identity: {
     type:'SystemAssigned'
   }
+  tags: tags
   properties: {
     serverFarmId: appServicePlanId
     enabled: webAppEnabled
@@ -56,6 +59,7 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
     clientAffinityEnabled: clientAffinityEnabled
     vnetRouteAllEnabled: true
     virtualNetworkSubnetId: vnetIntegrationSubnetId
+    publicNetworkAccess: 'Disabled'
   }
 }
 

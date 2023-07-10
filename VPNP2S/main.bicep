@@ -1,27 +1,22 @@
 targetScope = 'subscription'
 param prefix string
 param location string
-param tenantid string = subscription().tenantId
 param globaltags object = {
-
+  modifiedDate: utcNow()
 }
 
 // Enviornment
 
-var databasesuffix = environment().suffixes.sqlServerHostname
-var databasesuffixname = replace(databasesuffix, '.','')
+
 
 
 // Resource Group Vars and Params
 param connectRgName string
-param spokeRgName string = '${prefix}${spokeName}-${connectRgName}'
-param hubRgName string  = '${prefix}${hubName}-${connectRgName}'
 param computeRgName string
+param supportRgName string
 
 
 // virtual network vars and params
-param spokeName string
-param spoke01Network string
 param hub01Network string
 param hubName string
 param publicSubnet string
@@ -30,317 +25,135 @@ param dnsResolverInboundSubnet string
 param dnsResolverOutboundSubnet string
 param vpnGatewaySubnet string
 param computeSubnet string
-param myIpAddress string
-
-param defaultNsg string
-param spoke01Prefix string = '${spoke01Network}0.0/16'
+param vnetIntegrationSubnet string
 param hub01Prefix string = '${hub01Network}0.0/16'
 param vpnClientAddressCIDR string
 param vpnClientProtocols string
 param vpnGatewaySku string
 
+
+
+
 // dnsResolver Info
-param dnsResolversuffix string
-var dnsResolverName = '${prefix}${dnsResolversuffix}'
-var inboundEndpointsName = '${prefix}${dnsResolversuffix}IbEp'
-var outboundEndpointsName = '${prefix}${dnsResolversuffix}ObEp'
-var forwardingRuleSetsName = '${prefix}${dnsResolversuffix}RuleSets'
+// param dnsResolversuffix string
+// var dnsResolverName = '${prefix}${dnsResolversuffix}'
+// var inboundEndpointsName = '${prefix}${dnsResolversuffix}IbEp'
+// var outboundEndpointsName = '${prefix}${dnsResolversuffix}ObEp'
+// var forwardingRuleSetsName = '${prefix}${dnsResolversuffix}RuleSets'
 
 var resourceGroups = [
   {
-    name: spokeRgName
+    name: '${prefix}-${connectRgName}'
     location: location
   }
   {
-    name: hubRgName
-    location: location
+    name: '${prefix}-${computeRgName}'
+    location: location 
   }
   {
-    name: computeRgName
+    name: '${prefix}-${supportRgName}'
     location: location 
   }
 ]
 
-param networks array = [
-  {
-    name: '${prefix}-${hubName}-01'
-    vnetPrefix: spoke01Prefix
-    location: location
-    scope: spokeRgName
-    subnets: [
-      {
-        name: '${prefix}-${spokeName}-publicSn'
-        properties:{
-          addressPrefix: '${spoke01Network}${publicSubnet}'    
-        }
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-publicSn-defaultNsg')
-          name: '${prefix}-${spokeName}-publicSn-nsg'
-          securityRules: []
-        }
-      }
-      {
-        name: '${prefix}-${spokeName}-supportSn'
-        properties:{
-          addressPrefix: '${spoke01Network}${supportSubnet}'
-    
-        }
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-supportSn-defaultNsg')
-          name: '${prefix}-${spokeName}-supportSn-nsg'
-          securityRules: []
-        }
-      }
-      {
-        name: '${prefix}-${spokeName}-dnsResolverInboundSn'
-        subnetProperties:{
-          addressPrefix: '${spoke01Network}${dnsResolverInboundSubnet}'
-        }
-        subnetDelegations: [
-          {
-            name: '${prefix}-${spokeName}-dnsResolverInboundSn-del'
-            properties: {
-            serviceName: 'Microsoft.Network/dnsResolvers'
-            }
-          }
-        ]
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-dnsResolverInboundSn-defaultNsg')
-          name: '${prefix}-${spokeName}-dnsResolverInboundSn-nsg'
-          securityRules: []
-        }
-
-        
-      }
-      {
-        name: '${prefix}-${spokeName}-dnsResolverOutboundSn'
-        properties:{
-          addressPrefix: '${spoke01Network}${dnsResolverOutboundSubnet}'
-        }
-        subnetDelegations: [
-          {
-            name: '${prefix}-${spokeName}-dnsResolverOutboundSn-del'
-            properties: {
-              serviceName: 'Microsoft.Network/dnsResolvers'
-            }
-          }
-        ]
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-dnsResolverOutboundSn-defaultNsg')
-          name: '${prefix}-${spokeName}-dnsResolverOutboundSn-nsg'
-          securityRules: []
-        }
-        
-      }
-      {
-        name: 'GatewaySubnet'
-        properties:{
-          addressPrefix: '${spoke01Network}${vpnGatewaySubnet}'
-        }
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-GatewaySubnet-defaultNsg')
-          name: '${prefix}-${spokeName}-GatewaySubnet-nsg'
-          securityRules: []
-        }
-      }
-    ]
-   
-  }
-  {
-    name: '${prefix}-${spokeName}-01'
-    vnetPrefix: hub01Prefix
-    location: location
-    scope: spokeRgName
-    subnets: [
-      {
-        name: '${spokeName}-computeSn'
-        properties:{
-          addressPrefix: '${spoke01Network}${computeSubnet}'
-        }
-        nsg:{
-          id: resourceId('Microsoft.Network/networkSecurityGroups','${prefix}-${spokeName}-GatewaySubnet-defaultNsg')
-          name: '${prefix}-${spokeName}-compute-nsg'
-          securityRules: [
-            {
-              name: 'AllowRDPInbound'
-              properties: {
-                protocol: 'TCP'
-                sourcePortRange: '*'
-                destinationPortRange: '3389'
-                sourceAddressPrefix: myIpAddress
-                destinationAddressPrefix: '*'
-                access: 'Allow'
-                priority: 'Inbound'
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-]
-
-// Resource Group Modules
-module resourceGroupLoop 'Modules/ResourceGroup.bicep' =[for resourceGroup in resourceGroups: {
-  name: resourceGroup.name
+module rgroups 'Modules/resourceGroup/ResourceGroup.bicep' =[for (group, i) in resourceGroups: {
+  name: group.name
   params: {
     location: location
-    resourceGroupName: '${prefix}${connectRgName}'
+    resourceGroupName: group.name
+    tags:globaltags
   }
 }]
 
-
-
-//Connect Modules
-module virtualNetwork 'Modules/Network/network.bicep' =[for (network, i) in networks:{
-  scope: resourceGroup(connectRgName)
-  name: '${network.name}'
+module hub01 'Modules/Network/network.bicep' = {
+  scope: resourceGroup(rgroups[0].name)
+  name: '${prefix}-${hubName}-01'
   params: {
-    location: location
-    vnetAddress: network.vnetPrefix
-    vnetName: '${network.name}'
-    subnets: network.subnets
+    computeSubnetName: '${hubName}-compute-sn'
+    computeSubnetPrefix:  '${hub01Network}${computeSubnet}'
+    dnsResolverInboundSubnetName: '${hubName}-dnsresolverinbound-sn'
+    dnsResolverInboundSubnetPrefix:'${hub01Network}${dnsResolverInboundSubnet}'
+    dnsResolverOutboundSubnetName:  '${hubName}-dnsresolveroutbound-sn'
+    dnsResolverOutboundSubnetPrefix: '${hub01Network}${dnsResolverOutboundSubnet}'
     tags: globaltags
-   }
-  dependsOn:[
-    resourceGroupLoop
-    nsgModule
-  ]
-}]
-
-module nsgModule 'Modules/Network/nsgDefault.bicep' = [for (item, i) in networks:{
-  scope:  resourceGroup(connectRgName)
-  name: item.subnets.nsgName
-  params: {
-    location: item.location
-    nsgName: item.subnets.nsgName
-    securityRules: item.nsg.securityRules
+    location: location
+    publicAddressPrefix: '${hub01Network}${publicSubnet}'
+    publicSubnetName: '${hubName}-public-sn'
+    supportServicvesSubnetName: '${hubName}-support-sn'
+    supportServicvesSubnetPrefix: '${hub01Network}${supportSubnet}'
+    vnetAddress: hub01Prefix
+    vnetName: '${prefix}-${hubName}-01'
+    vnetIntegrationSubnetName:'${hubName}-vnetInt-sn'
+    vnetIntegrationSubnetPrefix: '${hub01Network}${vnetIntegrationSubnet}'
+    VPNGatewaySubnetPrefix:  '${hub01Network}${vpnGatewaySubnet}'
   }
-  dependsOn: [
-    resourceGroupLoop
-  ]
-}]
+}
 
-// module dnsResolverIbSn 'Modules/subnet.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: '${prefix}-dnsResolverIbsn'
-//   params: {
-//     subnetname: '${virtualNetwork.name}/${prefix}-dnsResolverIbsn'
-//     addressprefix: '${spoke01Address}${dnsResolverInboundSn}'
-//   }
-//   dependsOn:[
-    
-//   ]
-// }
+module privateDns 'Modules/dnsZones/privateDnsZones.bicep' = {
+  scope: resourceGroup(rgroups[0].name)
+  name: '${prefix}-privateDnsZones-01'
+  params: {
+    vpnVnetId: hub01.outputs.vnetid
+    tags:globaltags
+  }
+}
 
-// module dnsResolverObSn 'Modules/subnet.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: '${prefix}-dnsResolverObsn'
-//   params: {
-//     subnetname: '${virtualNetwork.name}/${prefix}-dnsResolverObsn'
-//     addressprefix: '${spoke01Address}${dnsResolverOutboundSn}'
-//   }
-//   dependsOn:[
-//     dnsResolverIbSn
-    
-//   ]
-// }
-// module dnsResolver 'Modules/dnsResolvers/dnsResolvers.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: dnsResolverName
-//   params: {
-//     inboundEndpointsName: inboundEndpointsName
-//     inboundSubnetId: dnsResolverIbSn.outputs.subnetid
-//     location: location
-//     outboundEndpointsName: outboundEndpointsName
-//     outboundSubnetId: dnsResolverObSn.outputs.subnetid
-//     virtualNetworkId: virtualNetwork.outputs.id
-//     dnsResolvercfgname: dnsResolverName
-//   }
-// }
+module dnsResolver 'Modules/dnsResolvers/dnsResolvers.bicep' = {
+  scope: resourceGroup(rgroups[0].name)
+  name: '${prefix}-dnsResolver-01'
+  params: {
+    dnsResolvercfgname: '${prefix}-dnsResolver-01'
+    inboundEndpointsName: '${prefix}-inboundEP-01'
+    inboundSubnetId: hub01.outputs.subnets[3].id
+    location: location
+    outboundEndpointsName: '${prefix}-outboundEP-01'
+    outboundSubnetId: hub01.outputs.subnets[4].id
+    tags:globaltags
+    virtualNetworkId: hub01.outputs.vnetid
+  }
+}
+module appServicePlan 'Modules/appServicePlan/appServiceplan.bicep' = {
+  scope: resourceGroup(rgroups[1].name)
+  name:  '${prefix}-AppServicePlan-01'
+  params: {
+    appServicePlanName: '${prefix}-AppServicePlan-01'
+    location: location
+    skuSize: 'B1'
+    tags:globaltags
+  }
+}
 
-// module forwardingRuleSets 'Modules/forwardingRuleSets.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: forwardingRuleSetsName
-//   params: {
-//     forwardRuleSetName: forwardingRuleSetsName
-//     location: location
-//     outboundEndpointsId: dnsResolver.outputs.outboundEndpointId
-//   }
-// }
+module webApp 'Modules/appServicePlan/webApp.bicep' = {
+  scope: resourceGroup(rgroups[1].name)
+  name: '${prefix}-webApp-01'
+  params: {
+    appDnsZoneId: privateDns.outputs.WebAppDnsId
+    appServicePlanId: appServicePlan.outputs.id
+    kind: 'Linux'
+    location: location
+    tags:globaltags
+    vnetIntegrationSubnetId: hub01.outputs.subnets[5].id
+    webAppName: '${prefix}-webApp-01'
+    webAppSubnetId: hub01.outputs.subnets[1].id
+  }
+}
 
-// module forwardingRules01 'Modules/forwardingRules.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: databasesuffixname
-//   params: {
-//     domainName: 'privatelink${databasesuffix}.'
-//     forwardingRulesName: databasesuffixname
-//     inboundDnsServerIPAddress: dnsResolver.outputs.inboundEndpointsIp
-//     forwardingRuleSetName: forwardingRuleSets.name
-//   }
-//   dependsOn: [
-//     forwardingRuleSets
-//   ]
-// }
+param vpnGatewayName string
 
-// module forwardingRules02 'Modules/forwardingRules.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: 'internalmonorailnet'
-//   params: {
-//     domainName: 'internal.monorail.net.'
-//     forwardingRulesName: 'internalmonorailnet'
-//     inboundDnsServerIPAddress: dnsResolver.outputs.inboundEndpointsIp
-//     forwardingRuleSetName: forwardingRuleSets.name
-//   }
-//   dependsOn: [
-//     forwardingRules01
-//   ]
-// }
+module vpnGateway 'Modules/vpnGateway/vpnGateway.bicep' = {
+  scope: resourceGroup(rgroups[0].name)
+  name: '${prefix}-${vpnGatewayName}-01'
+  params: {
+    gatewayName: '${prefix}-${vpnGatewayName}-01'
+    gatewaySku: vpnGatewaySku
+    location: location
+    privateIPAllocationMethod: 'Dynamic'
+    subnetid: hub01.outputs.subnets[6].id
+    tags:globaltags
+    tenantId: subscription().tenantId
+    vpnClientAddressCIDR: vpnClientAddressCIDR
+    vpnClientProtocols: vpnClientProtocols
+  }
+}
 
-// module forwardingRules03 'Modules/forwardingRules.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: 'Wildcard'
-//   params: {
-//     domainName: '.'
-//     forwardingRulesName: 'Wildcard'
-//     inboundDnsServerIPAddress: '10.5.5.5'
-//     forwardingRuleSetName: forwardingRuleSets.name
-//   }
-//   dependsOn: [
-//     forwardingRules02
-//     forwardingRules01
-//   ]
-// }
 
-// module vpnsubnet 'Modules/subnet.bicep' = {
-//   scope: resourceGroup(connectRG.name)
-//   name: '${prefix}-vpnsn'
-//   params: {
-//     subnetname: '${virtualNetwork.name}/GatewaySubnet'
-//     addressprefix: '${spoke01Address}${vpnSN}'
-//   }
-//   dependsOn: [
-//     virtualNetwork
-//   ]
-// }
-
-// // VPN gateway
-// module vpngtw 'Modules/vpnGateway.bicep' = {
-// name: '${prefix}-vpnsngtw'
-// scope: resourceGroup(connectRG.name)
-// params:{
-//   location: location
-//   gatewayName: '${prefix}-vpnsngtw'
-//   gatewaySku: vpnGatewaySku
-//   privateIPAllocationMethod: 'Dynamic'
-//   subnetid: vpnsubnet.outputs.subnetid
-//   tenantId: tenantid
-//   vpnClientAddressCIDR: vpnClientAddressCIDR
-//   vpnClientProtocols: vpnClientProtocols
-// }
-// dependsOn: [
-//   vpnsubnet
-//   connectRG
-// ]
-// }
-// output DNSServer string = dnsResolver.outputs.inboundEndpointsIp

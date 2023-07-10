@@ -11,6 +11,7 @@ param appServicePlanName string
 param skuSize string 
 param perSiteScaling bool = false
 param elasticScaleEnabled bool = false
+param tags object
 param targetWorkerCount int = 0
 param targetWorkerSizeId int = 0
 param zoneRedundant bool = false
@@ -24,6 +25,7 @@ resource appSvcPln 'Microsoft.Web/serverfarms@2022-03-01' = {
     name: skuSize
   }
   kind: 'Linux'
+  tags: tags
   properties: {
     perSiteScaling: perSiteScaling
     elasticScaleEnabled: elasticScaleEnabled

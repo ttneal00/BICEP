@@ -1,6 +1,7 @@
 targetScope = 'resourceGroup'
 
 param vpnVnetId string
+param tags object
 
 param privateDnsZones array = [
   {
@@ -52,6 +53,7 @@ param privateDnsZones array = [
 resource prvDnsZones 'Microsoft.Network/privateDnsZones@2020-06-01' = [for privateDnsZone in privateDnsZones:{
   name: privateDnsZone.name
   location: 'global'
+  tags: tags
 }]
 
 resource dnsVirtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = [for i in range(0, itemCount) :{
@@ -64,6 +66,7 @@ resource dnsVirtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetwork
       id: privateDnsZones[i].vnetId
     }
   }
+  tags:tags
 }]
 
 
@@ -71,7 +74,7 @@ resource dnsVirtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetwork
 
 output zones array = [for (zone, i) in privateDnsZones:{
   privateZoneName: prvDnsZones[i].name
-  privateZoneId: privateDnsZones[i].id
+  privateZoneId: prvDnsZones[i].id
 }]
 
 output sqlDnsZoneName string = prvDnsZones[0].name
