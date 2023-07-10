@@ -11,9 +11,6 @@
         "computeRgName" :{
             "value" : "ComputeRG"
         },
-        "supportRgName" :{
-            "value" : "SupportRG"
-        },
         "prefix" : {
             "value": "tst"
         },
