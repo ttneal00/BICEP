@@ -13,8 +13,6 @@ param globaltags object = {
 // Resource Group Vars and Params
 param connectRgName string
 param computeRgName string
-param supportRgName string
-
 
 // virtual network vars and params
 param hub01Network string
