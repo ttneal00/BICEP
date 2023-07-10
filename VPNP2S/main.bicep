@@ -31,16 +31,6 @@ param vpnClientAddressCIDR string
 param vpnClientProtocols string
 param vpnGatewaySku string
 
-
-
-
-// dnsResolver Info
-// param dnsResolversuffix string
-// var dnsResolverName = '${prefix}${dnsResolversuffix}'
-// var inboundEndpointsName = '${prefix}${dnsResolversuffix}IbEp'
-// var outboundEndpointsName = '${prefix}${dnsResolversuffix}ObEp'
-// var forwardingRuleSetsName = '${prefix}${dnsResolversuffix}RuleSets'
-
 var resourceGroups = [
   {
     name: '${prefix}-${connectRgName}'
@@ -48,10 +38,6 @@ var resourceGroups = [
   }
   {
     name: '${prefix}-${computeRgName}'
-    location: location 
-  }
-  {
-    name: '${prefix}-${supportRgName}'
     location: location 
   }
 ]
